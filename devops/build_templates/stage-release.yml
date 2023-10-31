@@ -1,0 +1,20 @@
+parameters:
+  - name: tagBuild
+
+steps:
+- script: |
+    echo "##vso[task.setvariable variable=VALOR_TAG;]${{ parameters.tagBuild }}"
+    cp -R $(system.defaultworkingdirectory)/* $(build.artifactstagingdirectory)
+    find $(build.artifactstagingdirectory) -name "src" -type d | xargs rm -rf
+    find $(build.artifactstagingdirectory) -name "target" -type d | xargs rm -rf
+    sed -i s/\"latest\"/${{ parameters.tagBuild }}/g $(build.artifactstagingdirectory)/devops/deploy_templates/helm_charts/dsv/values.yaml
+    sed -i s/\"latest\"/${{ parameters.tagBuild }}/g $(build.artifactstagingdirectory)/devops/deploy_templates/helm_charts/prd/values.yaml
+  
+  displayName: 'Helm Charts Rename'
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifacts
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)/devops/deploy_templates'
+    ArtifactName: $(build.definitionname)
+    publishLocation: 'Container'

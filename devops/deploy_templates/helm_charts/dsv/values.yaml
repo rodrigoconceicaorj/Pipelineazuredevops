@@ -1,0 +1,67 @@
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: "doc-frontend"
+
+#nexus repositorio demo
+deployment:
+  replicaCount: 1
+  ports:
+    - containerPort: 80
+      protocol: TCP
+  livenessProbe: {}
+  readinessProbe: {}
+  image:
+    repository: dockerrod.com.br/fabrica/doc/frontend
+    pullPolicy: Always
+    tag: "latest"
+  env:
+    - name: AMBIENTE
+      value: "dsv"
+    - name: APP_ENV
+      value: "dsv"
+
+configMaps: []
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+
+route:
+  kind: Ingress
+  name: doc-frontend
+  path: '/'
+  port: 80
+  host: dsvdoc.com.br
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+  name: 80-tcp
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 400
+  targetMemoryUtilizationPercentage: 400
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

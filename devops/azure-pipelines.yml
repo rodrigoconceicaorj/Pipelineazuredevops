@@ -1,0 +1,46 @@
+#### AGENT POOL ####
+
+pool: All Pipelines
+
+#### OPCOES DE GATILHOS PARA INICIO DA PIPELINE ####
+
+trigger:
+  batch: 'true'
+  branches:
+    include:
+    - develop
+
+#### DECLARACAO DE VARIAVEIS ####
+
+variables:
+  projectName: doc
+  projectContext: frontend
+  dockerImageBuild: dockerrod.com.br/fabrica/devops/node/node:12.22.10-alpine
+
+  registry: dockerrod.com.br/fabrica/${{ variables.projectName }}/${{ variables.projectContext }}
+  tag: $(cat package.json | grep version | awk '{print $2}' | sed 's/[\",]//g')-$(Build.BuildNumber)
+
+#### INICIO DO BUILD ####
+
+jobs:
+
+- job: buildApplication
+  displayName: Build Application - ${{ variables.projectName }} ${{ variables.projectContext }}
+  steps:
+
+  - template: /devops/build_templates/build-app.yml
+    parameters:
+      dockerImage: ${{ variables.dockerImageBuild }}
+
+  - template: /devops/build_templates/sonar-tests.yml
+    parameters:
+      tagBuild: '${{ variables.tag }}'
+
+  - template: /devops/build_templates/build-publish-image.yml
+    parameters:
+      registryDocker: ${{ variables.registry }}
+      tagBuild: '${{ variables.tag }}'
+
+  - template: /devops/build_templates/stage-release.yml
+    parameters:
+      tagBuild: '${{ variables.tag }}'
