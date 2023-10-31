@@ -1,0 +1,13 @@
+parameters:
+  - name: tagBuild
+
+steps:
+- script: |
+    docker run -i --rm --entrypoint="/bin/sh" \
+    -v /root/.sonar/cache:/root/.sonar/cache \
+    -v $(pwd):/opt/app \
+    -e "SONAR_SCANNER_OPTS=-Xmx4096m" \
+    docker.mj.gov.br/fabrica/devops/sonarsource/sonar-scanner-cli:latest \
+    -c "cd /opt/app && sonar-scanner -Dproject.settings=/opt/app/devops/sonar-project.properties -Dsonar.projectVersion=${{parameters.tagBuild}}"
+  
+  displayName: 'Sonar Tests'
